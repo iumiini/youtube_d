@@ -132,7 +132,9 @@
                     // 刷新下載列表
                     loadDownloads();
                 } else {
-                    statusDiv.innerHTML = `<div class="error">❌ ${data.error}</div>`;
+                    // 保留換行符號
+                    const errorMsg = data.error.replace(/\n/g, '<br>');
+                    statusDiv.innerHTML = `<div class="error">❌ ${errorMsg}</div>`;
                 }
             } catch (error) {
                 statusDiv.innerHTML = `<div class="error">❌ 錯誤: ${error.message}</div>`;

@@ -41,20 +41,26 @@ def download():
             'outtmpl': os.path.join(DOWNLOAD_FOLDER, '%(title)s.%(ext)s'),
             'quiet': False,
             'no_warnings': False,
-            # 添加headers和cookies來避免403
+            # 添加headers來避免403
             'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                 'Accept-Language': 'en-us,en;q=0.5',
                 'Sec-Fetch-Mode': 'navigate',
             },
-            # 使用更兼容的提取器選項
+            # 使用更兼容的提取器選項（最新配置）
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['android', 'web'],
-                    'player_skip': ['webpage', 'configs'],
+                    'player_client': ['ios', 'android', 'web'],
+                    'skip': ['hls', 'dash'],
                 }
             },
+            # 添加更多選項來提高成功率
+            'nocheckcertificate': True,
+            'ignoreerrors': False,
+            'no_color': True,
+            'extract_flat': False,
+            'age_limit': None,
         }
 
         if format_type == 'mp3':
@@ -156,10 +162,32 @@ def download():
                 'filesize_mb': round(filesize_mb, 2)
             })
 
-    except Exception as e:
+    except yt_dlp.utils.DownloadError as e:
+        error_msg = str(e)
+        # 針對常見錯誤提供更友善的訊息
+        if '403' in error_msg or 'Forbidden' in error_msg:
+            error_msg = '下載被YouTube拒絕（403錯誤）。這可能是因為：\n1. YouTube偵測到自動化下載\n2. 影片有地區限制\n3. 影片需要登入才能觀看\n\n建議：請稍後再試，或嘗試其他影片'
+        elif '404' in error_msg or 'not available' in error_msg.lower():
+            error_msg = '找不到影片。可能原因：\n1. 影片已被刪除\n2. 影片設為私人\n3. 網址不正確'
+        elif 'age' in error_msg.lower():
+            error_msg = '此影片有年齡限制，無法下載'
+        elif 'copyright' in error_msg.lower():
+            error_msg = '此影片因版權問題無法下載'
+
         return jsonify({
             'success': False,
-            'error': f'下載失敗: {str(e)}'
+            'error': f'下載失敗: {error_msg}'
+        }), 500
+
+    except Exception as e:
+        import traceback
+        error_detail = traceback.format_exc()
+        print(f"錯誤詳情: {error_detail}")  # 在伺服器端輸出詳細錯誤
+
+        return jsonify({
+            'success': False,
+            'error': f'下載失敗: {str(e)}',
+            'detail': error_detail if app.debug else None
         }), 500
 
 

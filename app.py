@@ -35,26 +35,43 @@ def download():
         return jsonify({'success': False, 'error': '請提供YouTube網址'}), 400
 
     try:
+        # 基礎設定，添加更多選項來避免403錯誤
+        base_opts = {
+            'outtmpl': os.path.join(DOWNLOAD_FOLDER, '%(title)s.%(ext)s'),
+            'quiet': False,
+            'no_warnings': False,
+            # 添加headers和cookies來避免403
+            'http_headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-us,en;q=0.5',
+                'Sec-Fetch-Mode': 'navigate',
+            },
+            # 使用更兼容的提取器選項
+            'extractor_args': {
+                'youtube': {
+                    'player_client': ['android', 'web'],
+                    'player_skip': ['webpage', 'configs'],
+                }
+            },
+        }
+
         if format_type == 'mp3':
             # 下載MP3
             ydl_opts = {
+                **base_opts,
                 'format': 'bestaudio/best',
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
                     'preferredquality': '192',
                 }],
-                'outtmpl': os.path.join(DOWNLOAD_FOLDER, '%(title)s.%(ext)s'),
-                'quiet': False,
-                'no_warnings': False,
             }
         else:  # mp4
-            # 下載MP4
+            # 下載MP4 - 使用更簡單的格式選擇來避免問題
             ydl_opts = {
-                'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-                'outtmpl': os.path.join(DOWNLOAD_FOLDER, '%(title)s.%(ext)s'),
-                'quiet': False,
-                'no_warnings': False,
+                **base_opts,
+                'format': 'best[ext=mp4]/best',
             }
 
         # 執行下載

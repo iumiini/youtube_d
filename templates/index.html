@@ -20,6 +20,19 @@
             >
         </div>
 
+        <div class="quality-section">
+            <label for="quality">📺 影片畫質：</label>
+            <select id="quality" class="quality-select">
+                <option value="best">最高畫質</option>
+                <option value="2160">4K (2160p)</option>
+                <option value="1440">2K (1440p)</option>
+                <option value="1080" selected>Full HD (1080p)</option>
+                <option value="720">HD (720p)</option>
+                <option value="480">SD (480p)</option>
+                <option value="360">低畫質 (360p)</option>
+            </select>
+        </div>
+
         <div class="button-section">
             <button class="btn btn-audio" onclick="downloadVideo('mp3')">
                 🎵 下載 MP3
@@ -50,6 +63,7 @@
 
         async function downloadVideo(format) {
             const url = document.getElementById('youtubeUrl').value.trim();
+            const quality = document.getElementById('quality').value;
             const statusDiv = document.getElementById('status');
             const resultDiv = document.getElementById('result');
 
@@ -70,7 +84,8 @@
 
             // 顯示下載中狀態
             const formatText = format === 'mp3' ? 'MP3' : 'MP4';
-            statusDiv.innerHTML = `<div class="loading">⏳ 正在下載 ${formatText}，請稍候...</div>`;
+            const qualityText = quality === 'best' ? '最高畫質' : quality + 'p';
+            statusDiv.innerHTML = `<div class="loading">⏳ 正在下載 ${formatText} (${qualityText})，請稍候...</div>`;
 
             // 禁用按鈕
             const buttons = document.querySelectorAll('.btn');
@@ -84,7 +99,8 @@
                     },
                     body: JSON.stringify({
                         url: url,
-                        format: format
+                        format: format,
+                        quality: quality
                     })
                 });
 

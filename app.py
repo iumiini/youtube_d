@@ -30,6 +30,7 @@ def download():
     data = request.get_json()
     url = data.get('url')
     format_type = data.get('format')  # 'mp3' or 'mp4'
+    quality = data.get('quality', 'best')  # 畫質選項
 
     if not url:
         return jsonify({'success': False, 'error': '請提供YouTube網址'}), 400
@@ -68,10 +69,17 @@ def download():
                 }],
             }
         else:  # mp4
-            # 下載MP4 - 使用更簡單的格式選擇來避免問題
+            # 下載MP4 - 根據用戶選擇的畫質
+            if quality == 'best':
+                format_string = 'best[ext=mp4]/best'
+            else:
+                # 選擇指定畫質或更低畫質的最佳選項
+                format_string = f'bestvideo[height<={quality}][ext=mp4]+bestaudio[ext=m4a]/best[height<={quality}][ext=mp4]/best[ext=mp4]/best'
+
             ydl_opts = {
                 **base_opts,
-                'format': 'best[ext=mp4]/best',
+                'format': format_string,
+                'merge_output_format': 'mp4',
             }
 
         # 執行下載

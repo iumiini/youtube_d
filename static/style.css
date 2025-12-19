@@ -38,7 +38,7 @@ h1 {
 }
 
 .input-section {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 #youtubeUrl {
@@ -52,6 +52,40 @@ h1 {
 }
 
 #youtubeUrl:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.quality-section {
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.quality-section label {
+    font-weight: 600;
+    color: #333;
+    font-size: 16px;
+}
+
+.quality-select {
+    flex: 1;
+    padding: 12px 15px;
+    font-size: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.quality-select:hover {
+    border-color: #667eea;
+}
+
+.quality-select:focus {
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }

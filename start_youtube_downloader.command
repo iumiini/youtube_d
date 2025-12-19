@@ -35,7 +35,7 @@ fi
 # 檢查依賴是否安裝
 if ! python3 -c "import flask" 2>/dev/null; then
     echo -e "${YELLOW}⚠️  正在安裝依賴...${NC}"
-    pip3 install -r requirements.txt
+    pip3 install --user -r requirements.txt
 fi
 
 echo -e "${GREEN}✅ 啟動 Flask 服務器...${NC}"

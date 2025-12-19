@@ -32,20 +32,41 @@ if ! command -v ffmpeg &> /dev/null; then
     echo ""
 fi
 
+# 檢查虛擬環境是否存在
+if [ ! -d "venv" ]; then
+    echo -e "${YELLOW}⚠️  正在建立虛擬環境...${NC}"
+    python3 -m venv venv
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ 建立虛擬環境失敗${NC}"
+        read -p "按Enter鍵退出..."
+        exit 1
+    fi
+fi
+
+# 啟動虛擬環境並檢查依賴
+echo -e "${YELLOW}📦 檢查依賴套件...${NC}"
+source venv/bin/activate
+
 # 檢查依賴是否安裝
-if ! python3 -c "import flask" 2>/dev/null; then
+if ! python -c "import flask" 2>/dev/null; then
     echo -e "${YELLOW}⚠️  正在安裝依賴...${NC}"
-    pip3 install --user -r requirements.txt
+    pip install -r requirements.txt
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ 安裝依賴失敗${NC}"
+        read -p "按Enter鍵退出..."
+        exit 1
+    fi
 fi
 
 echo -e "${GREEN}✅ 啟動 Flask 服務器...${NC}"
+echo -e "${GREEN}🌐 應用將在 http://localhost:8080 啟動${NC}"
 echo ""
 
-# 等待2秒後自動打開瀏覽器
+# 等待3秒後自動打開瀏覽器
 (sleep 3 && open http://localhost:8080) &
 
-# 啟動Flask應用
-python3 -m flask run --host=0.0.0.0 --port=8080
+# 啟動Flask應用（使用虛擬環境的Python）
+python -m flask run --host=0.0.0.0 --port=8080
 
 # 如果程序退出
 echo ""

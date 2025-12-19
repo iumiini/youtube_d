@@ -71,21 +71,42 @@ def download():
         else:  # mp4
             # 下載MP4 - 根據用戶選擇的畫質
             if quality == 'best':
-                format_string = 'best[ext=mp4]/best'
+                # 最高畫質：優先選擇最高解析度
+                format_string = 'bestvideo+bestaudio/best'
             else:
-                # 選擇指定畫質或更低畫質的最佳選項
-                format_string = f'bestvideo[height<={quality}][ext=mp4]+bestaudio[ext=m4a]/best[height<={quality}][ext=mp4]/best[ext=mp4]/best'
+                # 指定畫質：嘗試多種格式組合以獲得最接近的畫質
+                # 1. 嘗試獲取指定畫質或稍低的視頻+音頻
+                # 2. 如果失敗，嘗試合併格式
+                # 3. 最後降級到任何可用格式
+                format_string = (
+                    f'bestvideo[height<={quality}]+bestaudio/'
+                    f'bestvideo[height<={quality}][ext=mp4]+bestaudio[ext=m4a]/'
+                    f'best[height<={quality}]/'
+                    f'bestvideo+bestaudio/'
+                    f'best'
+                )
 
             ydl_opts = {
                 **base_opts,
                 'format': format_string,
                 'merge_output_format': 'mp4',
+                # 確保合併視頻和音頻
+                'postprocessors': [{
+                    'key': 'FFmpegVideoConvertor',
+                    'preferedformat': 'mp4',
+                }] if format_type == 'mp4' else [],
             }
 
         # 執行下載
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             title = info.get('title', 'video')
+
+            # 獲取實際下載的格式資訊
+            actual_format = info.get('format', 'unknown')
+            width = info.get('width', 0)
+            height = info.get('height', 0)
+            filesize = info.get('filesize', 0) or info.get('filesize_approx', 0)
 
             # 找到下載的文件
             if format_type == 'mp3':
@@ -104,11 +125,35 @@ def download():
                         filename = file
                         break
 
+            # 獲取實際文件大小
+            actual_filesize = os.path.getsize(filepath) if os.path.exists(filepath) else 0
+            filesize_mb = actual_filesize / (1024 * 1024)
+
+            # 判斷實際畫質
+            quality_label = 'unknown'
+            if height >= 2160:
+                quality_label = '4K (2160p)'
+            elif height >= 1440:
+                quality_label = '2K (1440p)'
+            elif height >= 1080:
+                quality_label = 'Full HD (1080p)'
+            elif height >= 720:
+                quality_label = 'HD (720p)'
+            elif height >= 480:
+                quality_label = 'SD (480p)'
+            elif height >= 360:
+                quality_label = '360p'
+            elif height > 0:
+                quality_label = f'{height}p'
+
             return jsonify({
                 'success': True,
                 'message': f'下載完成！文件已保存到: {filepath}',
                 'filename': filename,
-                'filepath': filepath
+                'filepath': filepath,
+                'resolution': f'{width}x{height}' if width and height else 'unknown',
+                'quality': quality_label,
+                'filesize_mb': round(filesize_mb, 2)
             })
 
     except Exception as e:

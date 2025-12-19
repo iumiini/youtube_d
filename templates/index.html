@@ -108,9 +108,24 @@
 
                 if (data.success) {
                     statusDiv.innerHTML = '<div class="success">✅ 下載成功！</div>';
+
+                    let qualityInfo = '';
+                    if (data.resolution && data.quality && format === 'mp4') {
+                        qualityInfo = `
+                            <p><strong>實際畫質：</strong>${data.quality} (${data.resolution})</p>
+                        `;
+                    }
+
+                    let filesizeInfo = '';
+                    if (data.filesize_mb) {
+                        filesizeInfo = `<p><strong>文件大小：</strong>${data.filesize_mb} MB</p>`;
+                    }
+
                     resultDiv.innerHTML = `
                         <div class="result-box">
                             <p><strong>文件名：</strong>${data.filename}</p>
+                            ${qualityInfo}
+                            ${filesizeInfo}
                             <p><strong>保存路徑：</strong>${data.filepath}</p>
                         </div>
                     `;

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube 下載器</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="demo-notice">
+            <p>⚠️ 這是GitHub Pages演示版本，僅展示界面</p>
+            <p>📥 <strong>要實際下載YouTube影片，請：</strong></p>
+            <ol style="text-align: left; margin: 10px auto; max-width: 400px;">
+                <li>克隆專案到本地</li>
+                <li>安裝依賴：<code>pip install -r requirements.txt</code></li>
+                <li>運行：<code>python app.py</code></li>
+                <li>訪問：<code>http://localhost:5000</code></li>
+            </ol>
+            <a href="https://github.com/iumiini/youtube_d" target="_blank" class="github-link">
+                📂 查看完整專案
+            </a>
+        </div>
+
+        <h1>📹 YouTube 下載器</h1>
+        <p class="subtitle">輕鬆下載YouTube影片或音樂</p>
+
+        <div class="input-section">
+            <input
+                type="text"
+                id="youtubeUrl"
+                placeholder="請貼上YouTube網址..."
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="button-section">
+            <button class="btn btn-audio" onclick="showDemoMessage('mp3')">
+                🎵 下載 MP3
+            </button>
+            <button class="btn btn-video" onclick="showDemoMessage('mp4')">
+                🎬 下載 MP4
+            </button>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div id="result" class="result"></div>
+
+        <div class="feature-section">
+            <h2>✨ 功能特點</h2>
+            <div class="features">
+                <div class="feature-item">
+                    <span class="feature-icon">🎵</span>
+                    <h3>MP3音頻下載</h3>
+                    <p>高品質音頻提取</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">🎬</span>
+                    <h3>MP4影片下載</h3>
+                    <p>最佳畫質影片下載</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">📱</span>
+                    <h3>響應式設計</h3>
+                    <p>支援各種設備</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">⚡</span>
+                    <h3>簡單易用</h3>
+                    <p>一鍵下載超方便</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tech-section">
+            <h2>🛠️ 技術棧</h2>
+            <div class="tech-tags">
+                <span class="tech-tag">Python</span>
+                <span class="tech-tag">Flask</span>
+                <span class="tech-tag">yt-dlp</span>
+                <span class="tech-tag">FFmpeg</span>
+                <span class="tech-tag">HTML/CSS/JS</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showDemoMessage(format) {
+            const statusDiv = document.getElementById('status');
+            const formatText = format === 'mp3' ? 'MP3' : 'MP4';
+
+            statusDiv.innerHTML = `
+                <div class="error">
+                    <p><strong>⚠️ 這是演示版本</strong></p>
+                    <p>GitHub Pages 無法運行Python後端</p>
+                    <p style="margin-top: 10px;">要使用完整下載功能，請：</p>
+                    <ol style="text-align: left; margin: 10px auto; max-width: 350px; font-size: 14px;">
+                        <li>克隆專案：<code>git clone https://github.com/iumiini/youtube_d.git</code></li>
+                        <li>安裝依賴：<code>pip install -r requirements.txt</code></li>
+                        <li>安裝FFmpeg：<code>brew install ffmpeg</code></li>
+                        <li>運行應用：<code>python app.py</code></li>
+                        <li>訪問：<code>http://localhost:5000</code></li>
+                    </ol>
+                    <p style="margin-top: 10px;">
+                        <a href="https://github.com/iumiini/youtube_d#readme" target="_blank" style="color: #667eea; font-weight: bold;">
+                            📖 查看完整安裝教學
+                        </a>
+                    </p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube 下載器</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>📹 YouTube 下載器</h1>
+        <p class="subtitle">輕鬆下載YouTube影片或音樂</p>
+
+        <div class="input-section">
+            <input
+                type="text"
+                id="youtubeUrl"
+                placeholder="請貼上YouTube網址..."
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="quality-section">
+            <label for="quality">📺 影片畫質：</label>
+            <select id="quality" class="quality-select">
+                <option value="best">最高畫質</option>
+                <option value="2160">4K (2160p)</option>
+                <option value="1440">2K (1440p)</option>
+                <option value="1080" selected>Full HD (1080p)</option>
+                <option value="720">HD (720p)</option>
+                <option value="480">SD (480p)</option>
+                <option value="360">低畫質 (360p)</option>
+            </select>
+        </div>
+
+        <div class="button-section">
+            <button class="btn btn-audio" onclick="downloadVideo('mp3')">
+                🎵 下載 MP3
+            </button>
+            <button class="btn btn-video" onclick="downloadVideo('mp4')">
+                🎬 下載 MP4
+            </button>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div id="result" class="result"></div>
+
+        <div class="downloads-section">
+            <h2>📂 已下載的文件</h2>
+            <button class="btn btn-refresh" onclick="loadDownloads()">
+                🔄 刷新列表
+            </button>
+            <div id="downloadsList" class="downloads-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // 頁面加載時載入已下載的文件列表
+        window.onload = function() {
+            loadDownloads();
+        };
+
+        async function downloadVideo(format) {
+            const url = document.getElementById('youtubeUrl').value.trim();
+            const quality = document.getElementById('quality').value;
+            const statusDiv = document.getElementById('status');
+            const resultDiv = document.getElementById('result');
+
+            // 清空之前的結果
+            resultDiv.innerHTML = '';
+
+            // 驗證URL
+            if (!url) {
+                statusDiv.innerHTML = '<div class="error">❌ 請輸入YouTube網址！</div>';
+                return;
+            }
+
+            // 簡單驗證是否為YouTube網址
+            if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
+                statusDiv.innerHTML = '<div class="error">❌ 請輸入有效的YouTube網址！</div>';
+                return;
+            }
+
+            // 顯示下載中狀態
+            const formatText = format === 'mp3' ? 'MP3' : 'MP4';
+            const qualityText = quality === 'best' ? '最高畫質' : quality + 'p';
+            statusDiv.innerHTML = `<div class="loading">⏳ 正在下載 ${formatText} (${qualityText})，請稍候...</div>`;
+
+            // 禁用按鈕
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => btn.disabled = true);
+
+            try {
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        format: format,
+                        quality: quality
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    statusDiv.innerHTML = '<div class="success">✅ 下載成功！</div>';
+
+                    let qualityInfo = '';
+                    if (data.resolution && data.quality && format === 'mp4') {
+                        qualityInfo = `
+                            <p><strong>實際畫質：</strong>${data.quality} (${data.resolution})</p>
+                        `;
+                    }
+
+                    let filesizeInfo = '';
+                    if (data.filesize_mb) {
+                        filesizeInfo = `<p><strong>文件大小：</strong>${data.filesize_mb} MB</p>`;
+                    }
+
+                    resultDiv.innerHTML = `
+                        <div class="result-box">
+                            <p><strong>文件名：</strong>${data.filename}</p>
+                            ${qualityInfo}
+                            ${filesizeInfo}
+                            <p><strong>保存路徑：</strong>${data.filepath}</p>
+                        </div>
+                    `;
+                    // 刷新下載列表
+                    loadDownloads();
+                } else {
+                    // 保留換行符號
+                    const errorMsg = data.error.replace(/\n/g, '<br>');
+                    statusDiv.innerHTML = `<div class="error">❌ ${errorMsg}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ 錯誤: ${error.message}</div>`;
+            } finally {
+                // 重新啟用按鈕
+                buttons.forEach(btn => btn.disabled = false);
+            }
+        }
+
+        async function loadDownloads() {
+            const listDiv = document.getElementById('downloadsList');
+            listDiv.innerHTML = '<div class="loading">載入中...</div>';
+
+            try {
+                const response = await fetch('/downloads');
+                const data = await response.json();
+
+                if (data.files && data.files.length > 0) {
+                    listDiv.innerHTML = '<ul class="file-list">' +
+                        data.files.map(file => {
+                            const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+                            const icon = file.name.endsWith('.mp3') ? '🎵' : '🎬';
+                            return `<li>${icon} ${file.name} <span class="file-size">(${sizeInMB} MB)</span></li>`;
+                        }).join('') +
+                        '</ul>';
+                } else {
+                    listDiv.innerHTML = '<p class="no-files">尚無下載的文件</p>';
+                }
+            } catch (error) {
+                listDiv.innerHTML = `<div class="error">載入失敗: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
